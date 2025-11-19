@@ -142,26 +142,11 @@
       accent-color: var(--sap-teal);
     }
 
-    .timer-panel {
-      margin-bottom: 1.5rem;
-      padding: 1.25rem;
-      border-radius: 1rem;
-      background: #f5f8fe;
-      border: 1px solid #e1e8f5;
-    }
-
-    .timer-panel h2 {
-      margin: 0 0 0.5rem;
-      font-size: 1rem;
-      color: #51607d;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-
     .timer-block {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
+      margin: 1.5rem 0;
       gap: 0.75rem;
     }
 
@@ -190,12 +175,6 @@
     button:disabled {
       opacity: 0.6;
       cursor: not-allowed;
-    }
-
-    .table-btn {
-      padding: 0.35rem 0.9rem;
-      font-size: 0.8rem;
-      border-radius: 999px;
     }
 
     .btn-primary {
@@ -322,8 +301,7 @@
 <body>
   <div class="app-shell">
     <header>
-      <p>Single-user SAP-inspired tracker</p>
-      <h1>Dead Hang Control Center</h1>
+      <h2>Dead Hang Control Center</h2>
     </header>
 
     <nav>
@@ -335,42 +313,29 @@
       <section id="inputView" class="active">
         <div class="panel">
           <form id="entryForm">
-            <div class="timer-panel">
-              <h2>Timer Control</h2>
-              <div class="timer-block">
-                <div>
-                  <strong>Timer</strong>
-                  <div class="timer-display" id="timerDisplay">00:00</div>
-                </div>
-                <div class="button-row">
-                  <button type="button" class="btn-primary" id="startTimer">Start</button>
-                  <button type="button" class="btn-secondary" id="stopTimer" disabled>Stop + Fill</button>
-                  <button type="button" class="btn-secondary" id="resetTimer">Reset Time</button>
-                </div>
-              </div>
-            </div>
-
             <div class="form-grid">
               <label for="date">Date</label>
               <input type="date" id="date" required>
 
               <label for="time">Time [hh:mm]</label>
-              <input type="time" id="time" required>
+              <input type="time" id="time" step="600" required>
 
               <label for="duration">Duration [sec]</label>
               <input type="number" id="duration" min="1" placeholder="Duration in seconds" required>
 
               <label for="location">Location</label>
               <select id="location" required>
+                <option value="">Choose...</option>
                 <option>Gym</option>
-                <option selected>At Home</option>
+                <option>At Home</option>
                 <option>Hotel</option>
                 <option>At Work</option>
               </select>
 
               <label for="grip">Grip Type</label>
               <select id="grip" required>
-                <option selected>Passive Hang</option>
+                <option value="">Choose...</option>
+                <option>Passive Hang</option>
                 <option>Active Hang</option>
                 <option>One-Arm Assis</option>
                 <option>Towel Grip</option>
@@ -392,6 +357,18 @@
 
               <label for="notes">Notes</label>
               <textarea id="notes" placeholder="Additional notes"></textarea>
+            </div>
+
+            <div class="timer-block">
+              <div>
+                <strong>Timer</strong>
+                <div class="timer-display" id="timerDisplay">00:00</div>
+              </div>
+              <div class="button-row">
+                <button type="button" class="btn-primary" id="startTimer">Start</button>
+                <button type="button" class="btn-secondary" id="stopTimer" disabled>Stop + Fill</button>
+                <button type="button" class="btn-secondary" id="resetTimer">Reset Timer</button>
+              </div>
             </div>
 
             <div class="button-row">
@@ -424,7 +401,6 @@
                   <th>PRE</th>
                   <th>Symptoms</th>
                   <th>Notes</th>
-                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="entriesBody"></tbody>
@@ -508,15 +484,14 @@
       const validSymptoms = ['Forearm tightness', 'Elbow soreness', 'Wrist discomfort', 'Shoulder strain', 'Back tension'];
 
       const headerOrder = ['Date', 'Time', 'Duration (sec)', 'Location', 'Grip Type', 'PRE', 'Symptoms', 'Notes'];
-      const STORAGE_KEY = 'sapDhTrackerEntries';
 
       function initDefaults() {
         const now = new Date();
         dateInput.value = now.toISOString().split('T')[0];
         timeInput.value = toStepTime(now);
         durationInput.value = '';
-        locationSelect.value = 'At Home';
-        gripSelect.value = 'Passive Hang';
+        locationSelect.value = '';
+        gripSelect.value = '';
         preInput.value = 5;
         notesInput.value = '';
         symptomList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
@@ -527,6 +502,12 @@
         const rounded = new Date(date);
         rounded.setMilliseconds(0);
         rounded.setSeconds(0);
+        const minutes = rounded.getMinutes();
+        const remainder = minutes % 10;
+        if (remainder !== 0) {
+          const diff = remainder < 5 ? -remainder : 10 - remainder;
+          rounded.setMinutes(minutes + diff);
+        }
         const hours = String(rounded.getHours()).padStart(2, '0');
         const mins = String(rounded.getMinutes()).padStart(2, '0');
         return `${hours}:${mins}`;
@@ -544,7 +525,7 @@
       }
 
       function renderEntries() {
-        entriesBody.innerHTML = entries.map((entry, index) => `
+        entriesBody.innerHTML = entries.map(entry => `
           <tr>
             <td>${entry.date}</td>
             <td>${entry.time}</td>
@@ -554,7 +535,6 @@
             <td>${entry.pre}</td>
             <td>${entry.symptoms}</td>
             <td>${entry.notes}</td>
-            <td><button type="button" class="btn-danger table-btn delete-entry" data-index="${index}">Delete</button></td>
           </tr>
         `).join('');
         entryCounter.textContent = `${entries.length} entr${entries.length === 1 ? 'y' : 'ies'}`;
@@ -646,6 +626,9 @@
           errors.push('Time must be in hh:mm format.');
         } else {
           const [hours, minutes] = entry.time.split(':').map(Number);
+          if (minutes % 10 !== 0) {
+            errors.push('Time must use 10-minute steps.');
+          }
           if (hours > 23 || minutes > 59) {
             errors.push('Time value is out of range.');
           }
@@ -675,40 +658,6 @@
         }
 
         return errors;
-      }
-
-      function loadEntriesFromStorage() {
-        try {
-          const stored = localStorage.getItem(STORAGE_KEY);
-          if (!stored) {
-            return [];
-          }
-          const parsed = JSON.parse(stored);
-          if (!Array.isArray(parsed)) {
-            return [];
-          }
-          return parsed.map(item => ({
-            date: item.date || '',
-            time: item.time || '',
-            duration: item.duration || '',
-            location: item.location || '',
-            grip: item.grip || '',
-            pre: item.pre || '',
-            symptoms: item.symptoms || '',
-            notes: item.notes || ''
-          })).filter(entry => validateEntry(entry).length === 0);
-        } catch (error) {
-          console.warn('Failed to load entries from storage', error);
-          return [];
-        }
-      }
-
-      function persistEntries() {
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-        } catch (error) {
-          console.warn('Failed to persist entries', error);
-        }
       }
 
       function getEntryFromForm() {
@@ -805,7 +754,6 @@
           return entry;
         });
         entries = parsedEntries;
-        persistEntries();
         renderEntries();
         updateDashboard();
         showMessage('Data imported successfully.');
@@ -879,7 +827,6 @@
           return;
         }
         entries.push(entry);
-        persistEntries();
         renderEntries();
         updateDashboard();
         showMessage('Entry saved.');
@@ -903,18 +850,6 @@
       exportBtn.addEventListener('click', exportCsv);
       importInput.addEventListener('change', handleImport);
 
-      entriesBody.addEventListener('click', (event) => {
-        const deleteBtn = event.target.closest('.delete-entry');
-        if (!deleteBtn) return;
-        const index = Number(deleteBtn.dataset.index);
-        if (Number.isNaN(index)) return;
-        entries.splice(index, 1);
-        persistEntries();
-        renderEntries();
-        updateDashboard();
-        showMessage('Entry deleted.');
-      });
-
       navButtons.forEach(button => {
         button.addEventListener('click', () => {
           navButtons.forEach(btn => btn.classList.remove('active'));
@@ -928,7 +863,6 @@
       });
 
       initDefaults();
-      entries = loadEntriesFromStorage();
       renderEntries();
       updateDashboard();
     })();

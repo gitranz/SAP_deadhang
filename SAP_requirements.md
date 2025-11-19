@@ -15,12 +15,12 @@ Symptoms
 Notes
 
 ## data validation and data quality checks
-Date --> valid date
-Time --> to hours and 10 min steps
+Date --> valid date (default: current date)
+Time --> valid time (default: current time)
 Duration (sec) --> sec
-Location --> categoric (Gym, At Home, Hotel, At Work)
-Grip Type --> Passive Hang, Active Hang, One-Arm Assis, Towel Grip, Fingerboard, Mixed Grip
-PRE --> 1..10
+Location --> categoric (At Home, Gym, Hotel, At Work) (default: At Home)
+Grip Type --> categoric (Passive Hang, Active Hang, One-Arm Assis, Towel Grip, Fingerboard, Mixed Grip) (default: Passive Hang) 
+PRE --> 1..10 
 Symptoms --> Forearm tightness, Elbow soreness, Wrist discomfort, Shoulder strain, Back tension
 Notes --> free text
 
@@ -37,9 +37,11 @@ Notes --> free text
 - separate sheet of a dashboard of some average measues and trend over time of Duration of the hang. 
 - focus on easy entry of data for the user with all the checks and prefilled data
 - add all the input data fields to the main input screen (mainly for smartphone use; important for choosing design) with all input checks, to focus on easy input of the data.
+- put a "delete" button on each saved record to delete it. so make each row deletable
 
 # Design pattern
 - SAP (pure javascript)
 - persistence of saved records without exporting and without a backend
+- localStorage solution.
 - exported and imported functionality in CSV file
 
