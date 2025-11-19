@@ -192,6 +192,12 @@
       cursor: not-allowed;
     }
 
+    .table-btn {
+      padding: 0.35rem 0.9rem;
+      font-size: 0.8rem;
+      border-radius: 999px;
+    }
+
     .btn-primary {
       background: var(--sap-teal);
       color: #fff;
@@ -332,7 +338,6 @@
               <h2>Timer Control</h2>
               <div class="timer-block">
                 <div>
-                  <strong>Timer</strong>
                   <div class="timer-display" id="timerDisplay">00:00</div>
                 </div>
                 <div class="button-row">
@@ -417,6 +422,7 @@
                   <th>PRE</th>
                   <th>Symptoms</th>
                   <th>Notes</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="entriesBody"></tbody>
@@ -536,7 +542,7 @@
       }
 
       function renderEntries() {
-        entriesBody.innerHTML = entries.map(entry => `
+        entriesBody.innerHTML = entries.map((entry, index) => `
           <tr>
             <td>${entry.date}</td>
             <td>${entry.time}</td>
@@ -546,6 +552,7 @@
             <td>${entry.pre}</td>
             <td>${entry.symptoms}</td>
             <td>${entry.notes}</td>
+            <td><button type="button" class="btn-danger table-btn delete-entry" data-index="${index}">Delete</button></td>
           </tr>
         `).join('');
         entryCounter.textContent = `${entries.length} entr${entries.length === 1 ? 'y' : 'ies'}`;
@@ -889,6 +896,18 @@
 
       exportBtn.addEventListener('click', exportCsv);
       importInput.addEventListener('change', handleImport);
+
+      entriesBody.addEventListener('click', (event) => {
+        const deleteBtn = event.target.closest('.delete-entry');
+        if (!deleteBtn) return;
+        const index = Number(deleteBtn.dataset.index);
+        if (Number.isNaN(index)) return;
+        entries.splice(index, 1);
+        persistEntries();
+        renderEntries();
+        updateDashboard();
+        showMessage('Entry deleted.');
+      });
 
       navButtons.forEach(button => {
         button.addEventListener('click', () => {
