@@ -27,7 +27,7 @@ Notes --> free text
 
 # Requirements
 - Enter all Variables as key value pair. left is the name and right to enter. then next row. 
-- Include a Timer that i can start and stop.
+- Include a Timer that i can start and stop. (should be above the input fields)
 - When i click on the stop button the value of the dead hang duration (in sec) should be entered in the according input field with current date and time
 - Implement a Save button to save the whole day with all data to a internal data structure
 - All Buttons should also work when i open the html file on my smartphone!
@@ -38,6 +38,8 @@ Notes --> free text
 - focus on easy entry of data for the user with all the checks and prefilled data
 - add all the input data fields to the main input screen (mainly for smartphone use; important for choosing design) with all input checks, to focus on easy input of the data.
 - put a "delete" button on each saved record to delete it. so make each row deletable
+- a short header line "dead hang tracker"
+
 
 # Design pattern
 - SAP (pure javascript)
