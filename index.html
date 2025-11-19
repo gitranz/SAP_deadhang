@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SAP Dead Hang Tracker</title>
+  <style>
+    :root {
+      --sap-space: 1rem;
+      --sap-teal: #0a6ed1;
+      --sap-teal-dark: #084e94;
+      --sap-gray: #f3f6fb;
+      --sap-text: #0b1f34;
+      --sap-card: #ffffffd9;
+      font-family: "Segoe UI", "Helvetica Neue", system-ui, -apple-system, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, #dfe9f5, #cfdff4);
+      min-height: 100vh;
+      color: var(--sap-text);
+    }
+
+    .app-shell {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: calc(var(--sap-space) * 1.5) var(--sap-space) 3rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: var(--sap-space);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.9rem;
+      letter-spacing: 0.04em;
+    }
+
+    nav {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: var(--sap-space);
+    }
+
+    .nav-btn {
+      flex: 1;
+      border: none;
+      border-radius: 999px;
+      padding: 0.85rem 1rem;
+      font-weight: 600;
+      color: #fff;
+      background: var(--sap-teal);
+      opacity: 0.5;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .nav-btn.active {
+      opacity: 1;
+      transform: translateY(-1px);
+    }
+
+    .panel {
+      background: var(--sap-card);
+      border-radius: 1.2rem;
+      padding: calc(var(--sap-space) * 1.5);
+      box-shadow: 0 25px 45px rgba(8, 78, 148, 0.1);
+      backdrop-filter: blur(6px);
+    }
+
+    main > section {
+      display: none;
+    }
+
+    main > section.active {
+      display: block;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 0.85rem 0.75rem;
+      align-items: center;
+    }
+
+    label {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="time"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.65rem 0.8rem;
+      border: 1px solid #dae1ec;
+      border-radius: 0.65rem;
+      font-size: 1rem;
+      transition: border 0.2s ease;
+      background: #fff;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--sap-teal);
+      box-shadow: 0 0 0 4px rgba(10, 110, 209, 0.1);
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    .symptom-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.65rem;
+      border-radius: 999px;
+      background: #edf2fb;
+      font-size: 0.85rem;
+    }
+
+    .chip input {
+      accent-color: var(--sap-teal);
+    }
+
+    .timer-panel {
+      margin-bottom: 1.5rem;
+      padding: 1.25rem;
+      border-radius: 1rem;
+      background: #f5f8fe;
+      border: 1px solid #e1e8f5;
+    }
+
+    .timer-panel h2 {
+      margin: 0 0 0.5rem;
+      font-size: 1rem;
+      color: #51607d;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .timer-block {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+
+    .timer-display {
+      font-size: 2.5rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+    }
+
+    button {
+      border: none;
+      border-radius: 0.65rem;
+      padding: 0.75rem 1.6rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--sap-teal);
+      color: #fff;
+    }
+
+    .btn-secondary {
+      background: #e2ecf9;
+      color: var(--sap-teal);
+    }
+
+    .btn-danger {
+      background: #ff9e9e;
+      color: #7b1515;
+    }
+
+    .entries-panel {
+      margin-top: 2rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      padding: 0.7rem;
+      text-align: left;
+      border-bottom: 1px solid #edf0f6;
+    }
+
+    th {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #5d6b83;
+    }
+
+    .table-wrapper {
+      max-height: 260px;
+      overflow: auto;
+    }
+
+    .message {
+      margin-top: 1rem;
+      padding: 0.75rem;
+      border-radius: 0.65rem;
+      font-weight: 600;
+    }
+
+    .message.error {
+      background: #ffecec;
+      color: #972626;
+    }
+
+    .message.success {
+      background: #e9f8ef;
+      color: #1f7a4e;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+    }
+
+    .card {
+      padding: 1rem;
+      border-radius: 0.85rem;
+      background: #f8fbff;
+      border: 1px solid #e2e9f5;
+    }
+
+    .card h3 {
+      margin: 0 0 0.3rem;
+      font-size: 0.85rem;
+      color: #5c6b8a;
+    }
+
+    .card p {
+      margin: 0;
+      font-size: 1.6rem;
+      font-weight: 700;
+    }
+
+    canvas {
+      width: 100%;
+      height: 260px;
+    }
+
+    .importer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .importer label {
+      font-weight: 500;
+    }
+
+    @media (max-width: 640px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      nav {
+        flex-direction: column;
+      }
+
+      .timer-block {
+        align-items: center;
+      }
+
+      .symptom-list {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header>
+      <p>Single-user SAP-inspired tracker</p>
+      <h1>Dead Hang Control Center</h1>
+    </header>
+
+    <nav>
+      <button class="nav-btn active" data-target="inputView">Data Entry</button>
+      <button class="nav-btn" data-target="dashboardView">Dashboard</button>
+    </nav>
+
+    <main>
+      <section id="inputView" class="active">
+        <div class="panel">
+          <form id="entryForm">
+            <div class="timer-panel">
+              <h2>Timer Control</h2>
+              <div class="timer-block">
+                <div>
+                  <strong>Timer</strong>
+                  <div class="timer-display" id="timerDisplay">00:00</div>
+                </div>
+                <div class="button-row">
+                  <button type="button" class="btn-primary" id="startTimer">Start</button>
+                  <button type="button" class="btn-secondary" id="stopTimer" disabled>Stop + Fill</button>
+                  <button type="button" class="btn-secondary" id="resetTimer">Reset Time</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <label for="date">Date</label>
+              <input type="date" id="date" required>
+
+              <label for="time">Time [hh:mm]</label>
+              <input type="time" id="time" step="600" required>
+
+              <label for="duration">Duration [sec]</label>
+              <input type="number" id="duration" min="1" placeholder="Duration in seconds" required>
+
+              <label for="location">Location</label>
+              <select id="location" required>
+                <option>Gym</option>
+                <option selected>At Home</option>
+                <option>Hotel</option>
+                <option>At Work</option>
+              </select>
+
+              <label for="grip">Grip Type</label>
+              <select id="grip" required>
+                <option selected>Passive Hang</option>
+                <option>Active Hang</option>
+                <option>One-Arm Assis</option>
+                <option>Towel Grip</option>
+                <option>Fingerboard</option>
+                <option>Mixed Grip</option>
+              </select>
+
+              <label for="pre">PRE (1-10)</label>
+              <input type="number" id="pre" min="1" max="10" required>
+
+              <label>Symptoms</label>
+              <div class="symptom-list" id="symptomList">
+                <label class="chip"><input type="checkbox" value="Forearm tightness"> Forearm tightness</label>
+                <label class="chip"><input type="checkbox" value="Elbow soreness"> Elbow soreness</label>
+                <label class="chip"><input type="checkbox" value="Wrist discomfort"> Wrist discomfort</label>
+                <label class="chip"><input type="checkbox" value="Shoulder strain"> Shoulder strain</label>
+                <label class="chip"><input type="checkbox" value="Back tension"> Back tension</label>
+              </div>
+
+              <label for="notes">Notes</label>
+              <textarea id="notes" placeholder="Additional notes"></textarea>
+            </div>
+
+            <div class="button-row">
+              <button type="submit" class="btn-primary">Save Entry</button>
+              <button type="button" class="btn-secondary" id="resetForm">Reset Inputs</button>
+              <button type="button" class="btn-secondary" id="exportCsv">Export CSV</button>
+              <label class="btn-secondary importer">
+                Import CSV
+                <input type="file" id="importCsv" accept=".csv" style="display:none">
+              </label>
+            </div>
+            <div id="message" class="message" hidden></div>
+          </form>
+        </div>
+
+        <div class="panel entries-panel">
+          <div class="importer">
+            <strong>Saved Days</strong>
+            <span id="entryCounter">0 entries</span>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Time</th>
+                  <th>Duration (s)</th>
+                  <th>Location</th>
+                  <th>Grip</th>
+                  <th>PRE</th>
+                  <th>Symptoms</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody id="entriesBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="dashboardView">
+        <div class="panel">
+          <div class="dashboard-grid">
+            <div class="card">
+              <h3>Total Sessions</h3>
+              <p id="statSessions">0</p>
+            </div>
+            <div class="card">
+              <h3>Avg Duration (s)</h3>
+              <p id="statAverage">0</p>
+            </div>
+            <div class="card">
+              <h3>Max Duration (s)</h3>
+              <p id="statMax">0</p>
+            </div>
+            <div class="card">
+              <h3>Last 7 Avg (s)</h3>
+              <p id="statLast7">0</p>
+            </div>
+          </div>
+          <div style="margin-top:1.5rem;">
+            <h3>Trend (Duration over Time)</h3>
+            <canvas id="trendChart" width="800" height="300"></canvas>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      const form = document.getElementById('entryForm');
+      const dateInput = document.getElementById('date');
+      const timeInput = document.getElementById('time');
+      const durationInput = document.getElementById('duration');
+      const locationSelect = document.getElementById('location');
+      const gripSelect = document.getElementById('grip');
+      const preInput = document.getElementById('pre');
+      const notesInput = document.getElementById('notes');
+      const symptomList = document.getElementById('symptomList');
+      const messageBox = document.getElementById('message');
+      const entriesBody = document.getElementById('entriesBody');
+      const entryCounter = document.getElementById('entryCounter');
+      const statSessions = document.getElementById('statSessions');
+      const statAverage = document.getElementById('statAverage');
+      const statMax = document.getElementById('statMax');
+      const statLast7 = document.getElementById('statLast7');
+      const trendCanvas = document.getElementById('trendChart');
+      const trendCtx = trendCanvas.getContext('2d');
+
+      const navButtons = document.querySelectorAll('.nav-btn');
+      const sections = {
+        inputView: document.getElementById('inputView'),
+        dashboardView: document.getElementById('dashboardView')
+      };
+
+      const importInput = document.getElementById('importCsv');
+      const exportBtn = document.getElementById('exportCsv');
+      const resetBtn = document.getElementById('resetForm');
+
+      const timerDisplay = document.getElementById('timerDisplay');
+      const startTimerBtn = document.getElementById('startTimer');
+      const stopTimerBtn = document.getElementById('stopTimer');
+      const resetTimerBtn = document.getElementById('resetTimer');
+
+      let entries = [];
+      let timerInterval = null;
+      let timerStart = null;
+      let elapsedSeconds = 0;
+
+      const validLocations = ['Gym', 'At Home', 'Hotel', 'At Work'];
+      const validGrips = ['Passive Hang', 'Active Hang', 'One-Arm Assis', 'Towel Grip', 'Fingerboard', 'Mixed Grip'];
+      const validSymptoms = ['Forearm tightness', 'Elbow soreness', 'Wrist discomfort', 'Shoulder strain', 'Back tension'];
+
+      const headerOrder = ['Date', 'Time', 'Duration (sec)', 'Location', 'Grip Type', 'PRE', 'Symptoms', 'Notes'];
+
+      function initDefaults() {
+        const now = new Date();
+        dateInput.value = now.toISOString().split('T')[0];
+        timeInput.value = toStepTime(now);
+        durationInput.value = '';
+        locationSelect.value = 'At Home';
+        gripSelect.value = 'Passive Hang';
+        preInput.value = 5;
+        notesInput.value = '';
+        symptomList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        hideMessage();
+      }
+
+      function toStepTime(date) {
+        const rounded = new Date(date);
+        rounded.setMilliseconds(0);
+        rounded.setSeconds(0);
+        const minutes = rounded.getMinutes();
+        const remainder = minutes % 10;
+        if (remainder !== 0) {
+          const diff = remainder < 5 ? -remainder : 10 - remainder;
+          rounded.setMinutes(minutes + diff);
+        }
+        const hours = String(rounded.getHours()).padStart(2, '0');
+        const mins = String(rounded.getMinutes()).padStart(2, '0');
+        return `${hours}:${mins}`;
+      }
+
+      function showMessage(text, type = 'success') {
+        messageBox.textContent = text;
+        messageBox.className = `message ${type}`;
+        messageBox.hidden = false;
+      }
+
+      function hideMessage() {
+        messageBox.hidden = true;
+        messageBox.textContent = '';
+      }
+
+      function renderEntries() {
+        entriesBody.innerHTML = entries.map(entry => `
+          <tr>
+            <td>${entry.date}</td>
+            <td>${entry.time}</td>
+            <td>${entry.duration}</td>
+            <td>${entry.location}</td>
+            <td>${entry.grip}</td>
+            <td>${entry.pre}</td>
+            <td>${entry.symptoms}</td>
+            <td>${entry.notes}</td>
+          </tr>
+        `).join('');
+        entryCounter.textContent = `${entries.length} entr${entries.length === 1 ? 'y' : 'ies'}`;
+      }
+
+      function updateDashboard() {
+        if (!entries.length) {
+          statSessions.textContent = '0';
+          statAverage.textContent = '0';
+          statMax.textContent = '0';
+          statLast7.textContent = '0';
+          trendCtx.clearRect(0, 0, trendCanvas.width, trendCanvas.height);
+          return;
+        }
+
+        statSessions.textContent = String(entries.length);
+
+        const durations = entries.map(e => Number(e.duration));
+        const avg = durations.reduce((a, b) => a + b, 0) / durations.length;
+        statAverage.textContent = avg.toFixed(1);
+        statMax.textContent = Math.max(...durations).toString();
+
+        const last7 = durations.slice(-7);
+        const last7avg = last7.reduce((a, b) => a + b, 0) / last7.length;
+        statLast7.textContent = last7avg.toFixed(1);
+
+        drawTrend();
+      }
+
+      function drawTrend() {
+        const width = trendCanvas.width;
+        const height = trendCanvas.height;
+        trendCtx.clearRect(0, 0, width, height);
+
+        const padding = 40;
+        const plotWidth = width - padding * 2;
+        const plotHeight = height - padding * 2;
+
+        trendCtx.strokeStyle = '#d8e2f2';
+        trendCtx.lineWidth = 1;
+        for (let i = 0; i <= 4; i++) {
+          const y = padding + (plotHeight / 4) * i;
+          trendCtx.beginPath();
+          trendCtx.moveTo(padding, y);
+          trendCtx.lineTo(width - padding, y);
+          trendCtx.stroke();
+        }
+
+        if (entries.length === 0) return;
+        const maxDuration = Math.max(...entries.map(e => Number(e.duration))) || 1;
+        const xStep = entries.length > 1 ? plotWidth / (entries.length - 1) : 0;
+
+        trendCtx.strokeStyle = '#0a6ed1';
+        trendCtx.lineWidth = 3;
+        trendCtx.beginPath();
+
+        entries.forEach((entry, index) => {
+          const x = padding + xStep * index;
+          const y = padding + plotHeight - (Number(entry.duration) / maxDuration) * plotHeight;
+          if (index === 0) {
+            trendCtx.moveTo(x, y);
+          } else {
+            trendCtx.lineTo(x, y);
+          }
+        });
+        trendCtx.stroke();
+
+        trendCtx.fillStyle = '#0a6ed1';
+        entries.forEach((entry, index) => {
+          const x = padding + xStep * index;
+          const y = padding + plotHeight - (Number(entry.duration) / maxDuration) * plotHeight;
+          trendCtx.beginPath();
+          trendCtx.arc(x, y, 4, 0, Math.PI * 2);
+          trendCtx.fill();
+        });
+      }
+
+      function getSymptoms() {
+        return Array.from(symptomList.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+      }
+
+      function validateEntry(entry) {
+        const errors = [];
+        if (!entry.date || isNaN(new Date(entry.date).getTime())) {
+          errors.push('Please provide a valid date.');
+        }
+
+        if (!entry.time || !/^\d{2}:\d{2}$/.test(entry.time)) {
+          errors.push('Time must be in hh:mm format.');
+        } else {
+          const [hours, minutes] = entry.time.split(':').map(Number);
+          if (minutes % 10 !== 0) {
+            errors.push('Time must use 10-minute steps.');
+          }
+          if (hours > 23 || minutes > 59) {
+            errors.push('Time value is out of range.');
+          }
+        }
+
+        const durationValue = Number(entry.duration);
+        if (!Number.isFinite(durationValue) || durationValue <= 0) {
+          errors.push('Duration must be a positive number in seconds.');
+        }
+
+        if (!validLocations.includes(entry.location)) {
+          errors.push('Location must be selected from the list.');
+        }
+
+        if (!validGrips.includes(entry.grip)) {
+          errors.push('Grip type must be selected from the list.');
+        }
+
+        const preValue = Number(entry.pre);
+        if (!Number.isInteger(preValue) || preValue < 1 || preValue > 10) {
+          errors.push('PRE must be an integer between 1 and 10.');
+        }
+
+        const invalidSymptoms = entry.symptoms.split(', ').filter(symptom => symptom && !validSymptoms.includes(symptom));
+        if (invalidSymptoms.length) {
+          errors.push('Symptoms must be selected from the list.');
+        }
+
+        return errors;
+      }
+
+      function getEntryFromForm() {
+        return {
+          date: dateInput.value,
+          time: timeInput.value,
+          duration: durationInput.value.trim(),
+          location: locationSelect.value,
+          grip: gripSelect.value,
+          pre: preInput.value,
+          symptoms: getSymptoms().join(', '),
+          notes: notesInput.value.trim()
+        };
+      }
+
+      function resetFormInputs() {
+        initDefaults();
+        durationInput.value = '';
+        notesInput.value = '';
+      }
+
+      function exportCsv() {
+        if (!entries.length) {
+          showMessage('No entries to export.', 'error');
+          return;
+        }
+        const csvRows = [headerOrder.join(',')];
+        entries.forEach(entry => {
+          const row = [
+            entry.date,
+            entry.time,
+            entry.duration,
+            entry.location,
+            entry.grip,
+            entry.pre,
+            `"${entry.symptoms}"`,
+            `"${entry.notes.replace(/"/g, '""')}"`
+          ];
+          csvRows.push(row.join(','));
+        });
+        const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const dateTag = new Date().toISOString().split('T')[0];
+        link.download = `deadhang_tracker_${dateTag}.csv`;
+        link.click();
+        URL.revokeObjectURL(url);
+        showMessage('CSV exported successfully.');
+      }
+
+      function parseCsv(text) {
+        const lines = text.trim().split(/\r?\n/).filter(line => line.trim());
+        if (lines.length < 2) {
+          throw new Error('CSV file is empty.');
+        }
+        const headers = lines[0].split(',').map(h => h.trim());
+        if (headers.join(',') !== headerOrder.join(',')) {
+          throw new Error('CSV header does not match the expected format.');
+        }
+        const parsedEntries = lines.slice(1).map(line => {
+          const cells = [];
+          let current = '';
+          let inQuotes = false;
+          for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (char === '"' && line[i + 1] === '"' && inQuotes) {
+              current += '"';
+              i++;
+            } else if (char === '"') {
+              inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+              cells.push(current);
+              current = '';
+            } else {
+              current += char;
+            }
+          }
+          cells.push(current);
+          const entry = {
+            date: cells[0],
+            time: cells[1],
+            duration: cells[2],
+            location: cells[3],
+            grip: cells[4],
+            pre: cells[5],
+            symptoms: cells[6].replace(/^"|"$/g, ''),
+            notes: cells[7].replace(/^"|"$/g, '')
+          };
+          const errors = validateEntry(entry);
+          if (errors.length) {
+            throw new Error(`Invalid entry in CSV: ${errors.join(' ')}`);
+          }
+          return entry;
+        });
+        entries = parsedEntries;
+        renderEntries();
+        updateDashboard();
+        showMessage('Data imported successfully.');
+      }
+
+      function handleImport(evt) {
+        const file = evt.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            parseCsv(event.target.result);
+          } catch (error) {
+            showMessage(error.message, 'error');
+          } finally {
+            importInput.value = '';
+          }
+        };
+        reader.readAsText(file);
+      }
+
+      function startTimer() {
+        timerStart = Date.now();
+        elapsedSeconds = 0;
+        updateTimerDisplay(0);
+        timerInterval = setInterval(() => {
+          elapsedSeconds = Math.floor((Date.now() - timerStart) / 1000);
+          updateTimerDisplay(elapsedSeconds);
+        }, 250);
+        startTimerBtn.disabled = true;
+        stopTimerBtn.disabled = false;
+      }
+
+      function stopTimer() {
+        if (timerInterval) {
+          clearInterval(timerInterval);
+          timerInterval = null;
+        }
+        stopTimerBtn.disabled = true;
+        startTimerBtn.disabled = false;
+        const now = new Date();
+        dateInput.value = now.toISOString().split('T')[0];
+        timeInput.value = toStepTime(now);
+        durationInput.value = elapsedSeconds || 1;
+        showMessage('Timer stopped, duration filled in.');
+      }
+
+      function resetTimer() {
+        if (timerInterval) {
+          clearInterval(timerInterval);
+          timerInterval = null;
+        }
+        elapsedSeconds = 0;
+        updateTimerDisplay(0);
+        startTimerBtn.disabled = false;
+        stopTimerBtn.disabled = true;
+      }
+
+      function updateTimerDisplay(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        timerDisplay.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      }
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const entry = getEntryFromForm();
+        const errors = validateEntry(entry);
+        if (errors.length) {
+          showMessage(errors.join(' '), 'error');
+          return;
+        }
+        entries.push(entry);
+        renderEntries();
+        updateDashboard();
+        showMessage('Entry saved.');
+        form.reset();
+        initDefaults();
+      });
+
+      resetBtn.addEventListener('click', () => {
+        form.reset();
+        initDefaults();
+        showMessage('Inputs reset.');
+      });
+
+      startTimerBtn.addEventListener('click', startTimer);
+      stopTimerBtn.addEventListener('click', stopTimer);
+      resetTimerBtn.addEventListener('click', () => {
+        resetTimer();
+        showMessage('Timer reset.');
+      });
+
+      exportBtn.addEventListener('click', exportCsv);
+      importInput.addEventListener('change', handleImport);
+
+      navButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          navButtons.forEach(btn => btn.classList.remove('active'));
+          button.classList.add('active');
+          Object.values(sections).forEach(section => section.classList.remove('active'));
+          sections[button.dataset.target].classList.add('active');
+          if (button.dataset.target === 'dashboardView') {
+            updateDashboard();
+          }
+        });
+      });
+
+      initDefaults();
+      renderEntries();
+      updateDashboard();
+    })();
+  </script>
+</body>
+</html>
