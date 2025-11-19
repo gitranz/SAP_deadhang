@@ -349,7 +349,7 @@
               <input type="date" id="date" required>
 
               <label for="time">Time [hh:mm]</label>
-              <input type="time" id="time" step="600" required>
+              <input type="time" id="time" required>
 
               <label for="duration">Duration [sec]</label>
               <input type="number" id="duration" min="1" placeholder="Duration in seconds" required>
@@ -501,6 +501,7 @@
       const validSymptoms = ['Forearm tightness', 'Elbow soreness', 'Wrist discomfort', 'Shoulder strain', 'Back tension'];
 
       const headerOrder = ['Date', 'Time', 'Duration (sec)', 'Location', 'Grip Type', 'PRE', 'Symptoms', 'Notes'];
+      const STORAGE_KEY = 'sapDhTrackerEntries';
 
       function initDefaults() {
         const now = new Date();
@@ -519,12 +520,6 @@
         const rounded = new Date(date);
         rounded.setMilliseconds(0);
         rounded.setSeconds(0);
-        const minutes = rounded.getMinutes();
-        const remainder = minutes % 10;
-        if (remainder !== 0) {
-          const diff = remainder < 5 ? -remainder : 10 - remainder;
-          rounded.setMinutes(minutes + diff);
-        }
         const hours = String(rounded.getHours()).padStart(2, '0');
         const mins = String(rounded.getMinutes()).padStart(2, '0');
         return `${hours}:${mins}`;
@@ -643,9 +638,6 @@
           errors.push('Time must be in hh:mm format.');
         } else {
           const [hours, minutes] = entry.time.split(':').map(Number);
-          if (minutes % 10 !== 0) {
-            errors.push('Time must use 10-minute steps.');
-          }
           if (hours > 23 || minutes > 59) {
             errors.push('Time value is out of range.');
           }
@@ -675,6 +667,40 @@
         }
 
         return errors;
+      }
+
+      function loadEntriesFromStorage() {
+        try {
+          const stored = localStorage.getItem(STORAGE_KEY);
+          if (!stored) {
+            return [];
+          }
+          const parsed = JSON.parse(stored);
+          if (!Array.isArray(parsed)) {
+            return [];
+          }
+          return parsed.map(item => ({
+            date: item.date || '',
+            time: item.time || '',
+            duration: item.duration || '',
+            location: item.location || '',
+            grip: item.grip || '',
+            pre: item.pre || '',
+            symptoms: item.symptoms || '',
+            notes: item.notes || ''
+          })).filter(entry => validateEntry(entry).length === 0);
+        } catch (error) {
+          console.warn('Failed to load entries from storage', error);
+          return [];
+        }
+      }
+
+      function persistEntries() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+        } catch (error) {
+          console.warn('Failed to persist entries', error);
+        }
       }
 
       function getEntryFromForm() {
@@ -771,6 +797,7 @@
           return entry;
         });
         entries = parsedEntries;
+        persistEntries();
         renderEntries();
         updateDashboard();
         showMessage('Data imported successfully.');
@@ -844,6 +871,7 @@
           return;
         }
         entries.push(entry);
+        persistEntries();
         renderEntries();
         updateDashboard();
         showMessage('Entry saved.');
@@ -880,6 +908,7 @@
       });
 
       initDefaults();
+      entries = loadEntriesFromStorage();
       renderEntries();
       updateDashboard();
     })();
