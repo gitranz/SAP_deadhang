@@ -9,10 +9,83 @@
       --sap-space: 1rem;
       --sap-teal: #0a6ed1;
       --sap-teal-dark: #084e94;
-      --sap-gray: #f3f6fb;
       --sap-text: #0b1f34;
-      --sap-card: #ffffffd9;
+      
+      --bg-grad: linear-gradient(135deg, #dfe9f5, #cfdff4);
+      --card-bg: #ffffffd9;
+      --panel-shadow: rgba(8, 78, 148, 0.1);
+      
+      --input-bg: #fff;
+      --input-border: #dae1ec;
+      --input-focus: rgba(10, 110, 209, 0.1);
+      
+      --chip-bg: #edf2fb;
+      --chip-text: #0b1f34;
+      
+      --timer-bg: #f5f8fe;
+      --timer-border: #e1e8f5;
+      --timer-title: #51607d;
+      
+      --btn-sec-bg: #e2ecf9;
+      --btn-sec-text: #0a6ed1;
+      
+      --table-th: #5d6b83;
+      --table-border: #edf0f6;
+      
+      --msg-err-bg: #ffecec;
+      --msg-err-text: #972626;
+      --msg-succ-bg: #e9f8ef;
+      --msg-succ-text: #1f7a4e;
+      
+      --card-stat-bg: #f8fbff;
+      --card-stat-border: #e2e9f5;
+      --card-stat-title: #5c6b8a;
+      
+      --chart-grid: #d8e2f2;
+      --chart-dur: #0a6ed1;
+      --chart-wgt: #e67e22;
+
       font-family: "Segoe UI", "Helvetica Neue", system-ui, -apple-system, sans-serif;
+    }
+
+    [data-theme="dark"] {
+      --sap-teal: #3182ce;
+      --sap-teal-dark: #2c5282;
+      --sap-text: #f7fafc;
+      
+      --bg-grad: linear-gradient(135deg, #1a202c, #2d3748);
+      --card-bg: #2d3748f2;
+      --panel-shadow: rgba(0, 0, 0, 0.4);
+      
+      --input-bg: #4a5568;
+      --input-border: #718096;
+      --input-focus: rgba(66, 153, 225, 0.3);
+      
+      --chip-bg: #4a5568;
+      --chip-text: #e2e8f0;
+      
+      --timer-bg: #2d3748;
+      --timer-border: #4a5568;
+      --timer-title: #a0aec0;
+      
+      --btn-sec-bg: #4a5568;
+      --btn-sec-text: #90cdf4;
+      
+      --table-th: #a0aec0;
+      --table-border: #4a5568;
+      
+      --msg-err-bg: #742a2a;
+      --msg-err-text: #fed7d7;
+      --msg-succ-bg: #22543d;
+      --msg-succ-text: #c6f6d5;
+      
+      --card-stat-bg: #2d3748;
+      --card-stat-border: #4a5568;
+      --card-stat-title: #a0aec0;
+      
+      --chart-grid: #4a5568;
+      --chart-dur: #63b3ed;
+      --chart-wgt: #fbd38d;
     }
 
     * {
@@ -21,9 +94,10 @@
 
     body {
       margin: 0;
-      background: linear-gradient(135deg, #dfe9f5, #cfdff4);
+      background: var(--bg-grad);
       min-height: 100vh;
       color: var(--sap-text);
+      transition: background 0.3s ease, color 0.3s ease;
     }
 
     .app-shell {
@@ -33,14 +107,39 @@
     }
 
     header {
-      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       margin-bottom: var(--sap-space);
+      position: relative;
     }
 
-    header h1 {
+    header h2 {
       margin: 0;
       font-size: 1.9rem;
       letter-spacing: 0.04em;
+    }
+
+    .theme-toggle-wrapper {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .theme-btn {
+      background: none;
+      border: 1px solid var(--btn-sec-text);
+      color: var(--btn-sec-text);
+      padding: 0.4rem 0.8rem;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+    }
+    
+    .theme-btn:hover {
+      background: var(--btn-sec-bg);
     }
 
     nav {
@@ -67,11 +166,12 @@
     }
 
     .panel {
-      background: var(--sap-card);
+      background: var(--card-bg);
       border-radius: 1.2rem;
       padding: calc(var(--sap-space) * 1.5);
-      box-shadow: 0 25px 45px rgba(8, 78, 148, 0.1);
+      box-shadow: 0 25px 45px var(--panel-shadow);
       backdrop-filter: blur(6px);
+      transition: background 0.3s ease;
     }
 
     main > section {
@@ -102,11 +202,12 @@
     textarea {
       width: 100%;
       padding: 0.65rem 0.8rem;
-      border: 1px solid #dae1ec;
+      border: 1px solid var(--input-border);
       border-radius: 0.65rem;
       font-size: 1rem;
       transition: border 0.2s ease;
-      background: #fff;
+      background: var(--input-bg);
+      color: var(--sap-text);
     }
 
     input:focus,
@@ -114,7 +215,7 @@
     select:focus {
       outline: none;
       border-color: var(--sap-teal);
-      box-shadow: 0 0 0 4px rgba(10, 110, 209, 0.1);
+      box-shadow: 0 0 0 4px var(--input-focus);
     }
 
     textarea {
@@ -134,8 +235,10 @@
       gap: 0.35rem;
       padding: 0.35rem 0.65rem;
       border-radius: 999px;
-      background: #edf2fb;
+      background: var(--chip-bg);
+      color: var(--chip-text);
       font-size: 0.85rem;
+      cursor: pointer;
     }
 
     .chip input {
@@ -146,14 +249,14 @@
       margin-bottom: 1.5rem;
       padding: 1.25rem;
       border-radius: 1rem;
-      background: #f5f8fe;
-      border: 1px solid #e1e8f5;
+      background: var(--timer-bg);
+      border: 1px solid var(--timer-border);
     }
 
     .timer-panel h2 {
       margin: 0 0 0.5rem;
       font-size: 1rem;
-      color: #51607d;
+      color: var(--timer-title);
       letter-spacing: 0.04em;
       text-transform: uppercase;
     }
@@ -204,8 +307,8 @@
     }
 
     .btn-secondary {
-      background: #e2ecf9;
-      color: var(--sap-teal);
+      background: var(--btn-sec-bg);
+      color: var(--btn-sec-text);
     }
 
     .btn-danger {
@@ -227,14 +330,14 @@
     th, td {
       padding: 0.7rem;
       text-align: left;
-      border-bottom: 1px solid #edf0f6;
+      border-bottom: 1px solid var(--table-border);
     }
 
     th {
       font-size: 0.8rem;
       text-transform: uppercase;
       letter-spacing: 0.04em;
-      color: #5d6b83;
+      color: var(--table-th);
     }
 
     .table-wrapper {
@@ -250,13 +353,13 @@
     }
 
     .message.error {
-      background: #ffecec;
-      color: #972626;
+      background: var(--msg-err-bg);
+      color: var(--msg-err-text);
     }
 
     .message.success {
-      background: #e9f8ef;
-      color: #1f7a4e;
+      background: var(--msg-succ-bg);
+      color: var(--msg-succ-text);
     }
 
     .dashboard-grid {
@@ -268,14 +371,14 @@
     .card {
       padding: 1rem;
       border-radius: 0.85rem;
-      background: #f8fbff;
-      border: 1px solid #e2e9f5;
+      background: var(--card-stat-bg);
+      border: 1px solid var(--card-stat-border);
     }
 
     .card h3 {
       margin: 0 0 0.3rem;
       font-size: 0.85rem;
-      color: #5c6b8a;
+      color: var(--card-stat-title);
     }
 
     .card p {
@@ -286,7 +389,7 @@
 
     canvas {
       width: 100%;
-      height: 260px;
+      height: 300px;
     }
 
     .importer {
@@ -298,6 +401,29 @@
 
     .importer label {
       font-weight: 500;
+    }
+    
+    .chart-controls {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
     }
 
     @media (max-width: 640px) {
@@ -316,6 +442,20 @@
       .symptom-list {
         flex-direction: column;
       }
+      
+      header h2 {
+        font-size: 1.4rem;
+        text-align: left;
+      }
+      
+      header {
+        justify-content: space-between;
+      }
+      
+      .theme-toggle-wrapper {
+        position: static;
+        transform: none;
+      }
     }
   </style>
 </head>
@@ -323,6 +463,9 @@
   <div class="app-shell">
     <header>
       <h2>Dead Hang Control Center</h2>
+      <div class="theme-toggle-wrapper">
+        <button class="theme-btn" id="themeToggle">Dark Mode</button>
+      </div>
     </header>
 
     <nav>
@@ -379,6 +522,9 @@
               <label for="pre">PRE (1-10)</label>
               <input type="number" id="pre" min="1" max="10" required>
 
+              <label for="weight">Weight (kg)</label>
+              <input type="number" id="weight" step="0.1" min="0" placeholder="Optional">
+
               <label>Symptoms</label>
               <div class="symptom-list" id="symptomList">
                 <label class="chip"><input type="checkbox" value="Forearm tightness"> Forearm tightness</label>
@@ -420,6 +566,7 @@
                   <th>Location</th>
                   <th>Grip</th>
                   <th>PRE</th>
+                  <th>Weight (kg)</th>
                   <th>Symptoms</th>
                   <th>Notes</th>
                   <th>Actions</th>
@@ -451,9 +598,27 @@
               <p id="statLast7">0</p>
             </div>
           </div>
-          <div style="margin-top:1.5rem;">
-            <h3>Trend (Duration over Time)</h3>
+          
+          <div style="margin-top:2rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+              <h3>Trend Overlay</h3>
+            </div>
+            
+            <div class="chart-controls">
+              <label class="toggle-label">
+                <input type="checkbox" id="checkDuration" checked> 
+                <span class="legend-dot" style="background:var(--chart-dur)"></span> Duration
+              </label>
+              <label class="toggle-label">
+                <input type="checkbox" id="checkWeight" checked> 
+                <span class="legend-dot" style="background:var(--chart-wgt)"></span> Weight
+              </label>
+            </div>
+            
             <canvas id="trendChart" width="800" height="300"></canvas>
+            <p style="font-size:0.8rem; color:var(--card-stat-title); text-align:center; margin-top:0.5rem;">
+              Graphs are normalized to relative height (0-100% of max value).
+            </p>
           </div>
         </div>
       </section>
@@ -462,6 +627,7 @@
 
   <script>
     (function () {
+      // DOM Elements
       const form = document.getElementById('entryForm');
       const dateInput = document.getElementById('date');
       const timeInput = document.getElementById('time');
@@ -469,17 +635,22 @@
       const locationSelect = document.getElementById('location');
       const gripSelect = document.getElementById('grip');
       const preInput = document.getElementById('pre');
+      const weightInput = document.getElementById('weight');
       const notesInput = document.getElementById('notes');
       const symptomList = document.getElementById('symptomList');
       const messageBox = document.getElementById('message');
       const entriesBody = document.getElementById('entriesBody');
       const entryCounter = document.getElementById('entryCounter');
+      
       const statSessions = document.getElementById('statSessions');
       const statAverage = document.getElementById('statAverage');
       const statMax = document.getElementById('statMax');
       const statLast7 = document.getElementById('statLast7');
+      
       const trendCanvas = document.getElementById('trendChart');
       const trendCtx = trendCanvas.getContext('2d');
+      const checkDuration = document.getElementById('checkDuration');
+      const checkWeight = document.getElementById('checkWeight');
 
       const navButtons = document.querySelectorAll('.nav-btn');
       const sections = {
@@ -495,18 +666,53 @@
       const startTimerBtn = document.getElementById('startTimer');
       const stopTimerBtn = document.getElementById('stopTimer');
       const resetTimerBtn = document.getElementById('resetTimer');
+      
+      const themeToggle = document.getElementById('themeToggle');
 
+      // State
       let entries = [];
       let timerInterval = null;
       let timerStart = null;
       let elapsedSeconds = 0;
 
+      // Constants
       const validLocations = ['Gym', 'At Home', 'Hotel', 'At Work'];
       const validGrips = ['Passive Hang', 'Active Hang', 'One-Arm Assis', 'Towel Grip', 'Fingerboard', 'Mixed Grip'];
       const validSymptoms = ['Forearm tightness', 'Elbow soreness', 'Wrist discomfort', 'Shoulder strain', 'Back tension'];
-
-      const headerOrder = ['Date', 'Time', 'Duration (sec)', 'Location', 'Grip Type', 'PRE', 'Symptoms', 'Notes'];
+      const headerOrder = ['Date', 'Time', 'Duration (sec)', 'Location', 'Grip Type', 'PRE', 'Weight (kg)', 'Symptoms', 'Notes'];
       const STORAGE_KEY = 'sapDhTrackerEntries';
+      const THEME_KEY = 'sapDhTrackerTheme';
+
+      // --- Theme Handling ---
+      function initTheme() {
+        const savedTheme = localStorage.getItem(THEME_KEY);
+        if (savedTheme === 'dark') {
+          document.body.setAttribute('data-theme', 'dark');
+          themeToggle.textContent = 'Light Mode';
+        } else {
+          document.body.removeAttribute('data-theme');
+          themeToggle.textContent = 'Dark Mode';
+        }
+      }
+
+      themeToggle.addEventListener('click', () => {
+        const isDark = document.body.hasAttribute('data-theme');
+        if (isDark) {
+          document.body.removeAttribute('data-theme');
+          localStorage.setItem(THEME_KEY, 'light');
+          themeToggle.textContent = 'Dark Mode';
+        } else {
+          document.body.setAttribute('data-theme', 'dark');
+          localStorage.setItem(THEME_KEY, 'dark');
+          themeToggle.textContent = 'Light Mode';
+        }
+        drawTrend(); // Redraw chart for new colors
+      });
+
+      // --- Utils ---
+      function getCSSVar(name) {
+        return getComputedStyle(document.body).getPropertyValue(name).trim();
+      }
 
       function initDefaults() {
         const now = new Date();
@@ -516,6 +722,7 @@
         locationSelect.value = 'At Home';
         gripSelect.value = 'Passive Hang';
         preInput.value = 5;
+        weightInput.value = '';
         notesInput.value = '';
         symptomList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
         hideMessage();
@@ -541,6 +748,7 @@
         messageBox.textContent = '';
       }
 
+      // --- Core Logic ---
       function renderEntries() {
         entriesBody.innerHTML = entries.map((entry, index) => `
           <tr>
@@ -550,6 +758,7 @@
             <td>${entry.location}</td>
             <td>${entry.grip}</td>
             <td>${entry.pre}</td>
+            <td>${entry.weight || '-'}</td>
             <td>${entry.symptoms}</td>
             <td>${entry.notes}</td>
             <td><button type="button" class="btn-danger table-btn delete-entry" data-index="${index}">Delete</button></td>
@@ -590,8 +799,14 @@
         const padding = 40;
         const plotWidth = width - padding * 2;
         const plotHeight = height - padding * 2;
+        
+        // Colors from CSS
+        const gridColor = getCSSVar('--chart-grid');
+        const durColor = getCSSVar('--chart-dur');
+        const wgtColor = getCSSVar('--chart-wgt');
 
-        trendCtx.strokeStyle = '#d8e2f2';
+        // Draw Grid
+        trendCtx.strokeStyle = gridColor;
         trendCtx.lineWidth = 1;
         for (let i = 0; i <= 4; i++) {
           const y = padding + (plotHeight / 4) * i;
@@ -602,32 +817,74 @@
         }
 
         if (entries.length === 0) return;
-        const maxDuration = Math.max(...entries.map(e => Number(e.duration))) || 1;
+
         const xStep = entries.length > 1 ? plotWidth / (entries.length - 1) : 0;
 
-        trendCtx.strokeStyle = '#0a6ed1';
-        trendCtx.lineWidth = 3;
-        trendCtx.beginPath();
-
-        entries.forEach((entry, index) => {
-          const x = padding + xStep * index;
-          const y = padding + plotHeight - (Number(entry.duration) / maxDuration) * plotHeight;
-          if (index === 0) {
-            trendCtx.moveTo(x, y);
-          } else {
-            trendCtx.lineTo(x, y);
-          }
-        });
-        trendCtx.stroke();
-
-        trendCtx.fillStyle = '#0a6ed1';
-        entries.forEach((entry, index) => {
-          const x = padding + xStep * index;
-          const y = padding + plotHeight - (Number(entry.duration) / maxDuration) * plotHeight;
+        // Draw Duration
+        if (checkDuration.checked) {
+          const maxDuration = Math.max(...entries.map(e => Number(e.duration))) || 1;
+          trendCtx.strokeStyle = durColor;
+          trendCtx.lineWidth = 3;
           trendCtx.beginPath();
-          trendCtx.arc(x, y, 4, 0, Math.PI * 2);
-          trendCtx.fill();
-        });
+          
+          entries.forEach((entry, index) => {
+            const x = padding + xStep * index;
+            const y = padding + plotHeight - (Number(entry.duration) / maxDuration) * plotHeight;
+            if (index === 0) trendCtx.moveTo(x, y);
+            else trendCtx.lineTo(x, y);
+          });
+          trendCtx.stroke();
+          
+          // Dots
+          trendCtx.fillStyle = durColor;
+          entries.forEach((entry, index) => {
+            const x = padding + xStep * index;
+            const y = padding + plotHeight - (Number(entry.duration) / maxDuration) * plotHeight;
+            trendCtx.beginPath();
+            trendCtx.arc(x, y, 4, 0, Math.PI * 2);
+            trendCtx.fill();
+          });
+        }
+
+        // Draw Weight
+        if (checkWeight.checked) {
+          const weightData = entries.map((e, i) => ({ w: Number(e.weight), i }));
+          const validWeights = weightData.filter(d => d.w > 0);
+          
+          if (validWeights.length > 0) {
+             const maxWeight = Math.max(...validWeights.map(d => d.w)) * 1.05 || 1;
+             const minWeight = Math.min(...validWeights.map(d => d.w)) * 0.95;
+             const range = maxWeight - minWeight || 1;
+             
+             trendCtx.strokeStyle = wgtColor;
+             trendCtx.lineWidth = 3;
+             trendCtx.beginPath();
+             
+             let first = true;
+             weightData.forEach((d) => {
+               if (d.w <= 0) return; // skip points without weight
+               const x = padding + xStep * d.i;
+               const y = padding + plotHeight - ((d.w - minWeight) / range) * plotHeight;
+               if (first) {
+                 trendCtx.moveTo(x, y);
+                 first = false;
+               } else {
+                 trendCtx.lineTo(x, y);
+               }
+             });
+             trendCtx.stroke();
+
+             trendCtx.fillStyle = wgtColor;
+             weightData.forEach((d) => {
+               if (d.w <= 0) return;
+               const x = padding + xStep * d.i;
+               const y = padding + plotHeight - ((d.w - minWeight) / range) * plotHeight;
+               trendCtx.beginPath();
+               trendCtx.arc(x, y, 4, 0, Math.PI * 2);
+               trendCtx.fill();
+             });
+          }
+        }
       }
 
       function getSymptoms() {
@@ -667,6 +924,13 @@
           errors.push('PRE must be an integer between 1 and 10.');
         }
 
+        if (entry.weight) {
+            const w = Number(entry.weight);
+            if (isNaN(w) || w < 0) {
+                errors.push('Weight must be a positive number.');
+            }
+        }
+
         const invalidSymptoms = entry.symptoms.split(', ').filter(symptom => symptom && !validSymptoms.includes(symptom));
         if (invalidSymptoms.length) {
           errors.push('Symptoms must be selected from the list.');
@@ -688,6 +952,7 @@
             location: item.location || '',
             grip: item.grip || '',
             pre: item.pre || '',
+            weight: item.weight || '',
             symptoms: item.symptoms || '',
             notes: item.notes || ''
           })).filter(entry => validateEntry(entry).length === 0);
@@ -713,15 +978,10 @@
           location: locationSelect.value,
           grip: gripSelect.value,
           pre: preInput.value,
+          weight: weightInput.value.trim(),
           symptoms: getSymptoms().join(', '),
           notes: notesInput.value.trim()
         };
-      }
-
-      function resetFormInputs() {
-        initDefaults();
-        durationInput.value = '';
-        notesInput.value = '';
       }
 
       function exportCsv() {
@@ -738,6 +998,7 @@
             entry.location,
             entry.grip,
             entry.pre,
+            entry.weight,
             `"${entry.symptoms}"`,
             `"${entry.notes.replace(/"/g, '""')}"`
           ];
@@ -760,6 +1021,7 @@
           throw new Error('CSV file is empty.');
         }
         const headers = lines[0].split(',').map(h => h.trim());
+        
         if (headers.join(',') !== headerOrder.join(',')) {
           throw new Error('CSV header does not match the expected format.');
         }
@@ -782,6 +1044,7 @@
             }
           }
           cells.push(current);
+          
           const entry = {
             date: cells[0],
             time: cells[1],
@@ -789,8 +1052,9 @@
             location: cells[3],
             grip: cells[4],
             pre: cells[5],
-            symptoms: cells[6].replace(/^"|"$/g, ''),
-            notes: cells[7].replace(/^"|"$/g, '')
+            weight: cells[6],
+            symptoms: cells[7].replace(/^"|"$/g, ''),
+            notes: cells[8].replace(/^"|"$/g, '')
           };
           const errors = validateEntry(entry);
           if (errors.length) {
@@ -896,6 +1160,9 @@
 
       exportBtn.addEventListener('click', exportCsv);
       importInput.addEventListener('change', handleImport);
+      
+      checkDuration.addEventListener('change', drawTrend);
+      checkWeight.addEventListener('change', drawTrend);
 
       entriesBody.addEventListener('click', (event) => {
         const deleteBtn = event.target.closest('.delete-entry');
@@ -921,6 +1188,7 @@
         });
       });
 
+      initTheme();
       initDefaults();
       entries = loadEntriesFromStorage();
       renderEntries();
