@@ -7,6 +7,16 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0a6ed1">
   <title>SAP Dead Hang Tracker</title>
+  <script>
+    (function() {
+      try {
+        var savedTheme = localStorage.getItem('sapDhTrackerTheme');
+        if (savedTheme === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
   <style>
     :root {
       --sap-space: 1rem;
@@ -817,11 +827,10 @@
       // --- Theme Handling ---
       function initTheme() {
         const savedTheme = localStorage.getItem(THEME_KEY);
+        // Attribute already applied by head script
         if (savedTheme === 'dark') {
-          document.body.setAttribute('data-theme', 'dark');
           themeToggle.textContent = 'Light Mode';
         } else {
-          document.body.removeAttribute('data-theme');
           themeToggle.textContent = 'Dark Mode';
         }
 
@@ -835,17 +844,17 @@
           setTimeout(() => {
             heartOverlay.hidden = true;
           }, 200); // Allow fade-out transition to complete (0.5s animation duration)
-        }, 30500); // 3.5 seconds visible
+        }, 1500); // 0.5 seconds visible
       }
 
       themeToggle.addEventListener('click', () => {
-        const isDark = document.body.hasAttribute('data-theme');
+        const isDark = document.documentElement.hasAttribute('data-theme');
         if (isDark) {
-          document.body.removeAttribute('data-theme');
+          document.documentElement.removeAttribute('data-theme');
           localStorage.setItem(THEME_KEY, 'light');
           themeToggle.textContent = 'Dark Mode';
         } else {
-          document.body.setAttribute('data-theme', 'dark');
+          document.documentElement.setAttribute('data-theme', 'dark');
           localStorage.setItem(THEME_KEY, 'dark');
           themeToggle.textContent = 'Light Mode';
         }
