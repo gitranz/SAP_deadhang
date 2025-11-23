@@ -273,6 +273,7 @@
       outline: none;
       border-color: var(--sap-teal);
       box-shadow: 0 0 0 4px var(--input-focus);
+      transform: translateY(-1px);
     }
 
     textarea {
@@ -335,6 +336,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 0.6rem;
+      margin-top: 2rem; /* Spacing from Notes input */
     }
 
     .std-btn {
@@ -344,13 +346,23 @@
       font-size: 0.95rem;
       font-weight: 600;
       cursor: pointer;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       font-family: inherit;
       line-height: normal;
       text-decoration: none;
+    }
+    
+    .std-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .std-btn:active {
+      transform: scale(0.96) translateY(0);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
     }
 
     button {
@@ -361,6 +373,8 @@
     button:disabled {
       opacity: 0.6;
       cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
     }
 
     .table-btn {
@@ -419,6 +433,12 @@
       padding: 0.75rem;
       border-radius: 0.65rem;
       font-weight: 600;
+      animation: msgFadeIn 0.3s ease-out forwards;
+    }
+    
+    @keyframes msgFadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .message.error {
@@ -1194,6 +1214,7 @@
         }, 250);
         startTimerBtn.disabled = true;
         stopTimerBtn.disabled = false;
+        showMessage('Timer started. You got this!');
       }
 
       function stopTimer() {
@@ -1207,7 +1228,7 @@
         dateInput.value = now.toISOString().split('T')[0];
         timeInput.value = toStepTime(now);
         durationInput.value = elapsedSeconds || 1;
-        showMessage('Timer stopped, duration filled in.');
+        showMessage('Timer stopped! Duration updated.');
       }
 
       function resetTimer() {
@@ -1239,7 +1260,7 @@
         persistEntries();
         renderEntries();
         updateDashboard();
-        showMessage('Entry saved.');
+        showMessage('Great job! Session saved successfully.');
         form.reset();
         initDefaults();
       });
@@ -1247,14 +1268,14 @@
       resetBtn.addEventListener('click', () => {
         form.reset();
         initDefaults();
-        showMessage('Inputs reset.');
+        showMessage('All fields cleared.');
       });
 
       startTimerBtn.addEventListener('click', startTimer);
       stopTimerBtn.addEventListener('click', stopTimer);
       resetTimerBtn.addEventListener('click', () => {
         resetTimer();
-        showMessage('Timer reset.');
+        showMessage('Timer reset to 00:00.');
       });
 
       exportBtn.addEventListener('click', exportCsv);
@@ -1276,7 +1297,7 @@
         persistEntries();
         renderEntries();
         updateDashboard();
-        showMessage('Entry deleted.');
+        showMessage('Entry removed.');
       });
 
       navButtons.forEach(button => {
