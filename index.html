@@ -280,7 +280,7 @@
       gap: 0.6rem;
     }
 
-    button {
+    .std-btn {
       border: none;
       border-radius: 0.65rem;
       padding: 0.75rem 1.6rem;
@@ -288,6 +288,17 @@
       font-weight: 600;
       cursor: pointer;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: inherit;
+      line-height: normal;
+      text-decoration: none;
+    }
+
+    button {
+      /* inherit from std-btn where possible or keep specific resets */
+      font-family: inherit;
     }
 
     button:disabled {
@@ -299,6 +310,7 @@
       padding: 0.35rem 0.9rem;
       font-size: 0.8rem;
       border-radius: 999px;
+      /* inherit std-btn styles */
     }
 
     .btn-primary {
@@ -469,8 +481,8 @@
     </header>
 
     <nav>
-      <button class="nav-btn active" data-target="inputView">Data Entry</button>
-      <button class="nav-btn" data-target="dashboardView">Dashboard</button>
+      <button class="nav-btn std-btn active" data-target="inputView">Data Entry</button>
+      <button class="nav-btn std-btn" data-target="dashboardView">Dashboard</button>
     </nav>
 
     <main>
@@ -484,9 +496,9 @@
                   <div class="timer-display" id="timerDisplay">00:00</div>
                 </div>
                 <div class="button-row">
-                  <button type="button" class="btn-primary" id="startTimer">Start</button>
-                  <button type="button" class="btn-secondary" id="stopTimer" disabled>Stop + Fill</button>
-                  <button type="button" class="btn-secondary" id="resetTimer">Reset Time</button>
+                  <button type="button" class="btn-primary std-btn" id="startTimer">Start</button>
+                  <button type="button" class="btn-secondary std-btn" id="stopTimer" disabled>Stop + Fill</button>
+                  <button type="button" class="btn-secondary std-btn" id="resetTimer">Reset Time</button>
                 </div>
               </div>
             </div>
@@ -539,10 +551,10 @@
             </div>
 
             <div class="button-row">
-              <button type="submit" class="btn-primary">Save Entry</button>
-              <button type="button" class="btn-secondary" id="resetForm">Reset Inputs</button>
-              <button type="button" class="btn-secondary" id="exportCsv">Export CSV</button>
-              <label class="btn-secondary importer">
+              <button type="submit" class="btn-primary std-btn">Save Entry</button>
+              <button type="button" class="btn-secondary std-btn" id="resetForm">Reset Inputs</button>
+              <button type="button" class="btn-secondary std-btn" id="exportCsv">Export CSV</button>
+              <label class="btn-secondary std-btn">
                 Import CSV
                 <input type="file" id="importCsv" accept=".csv" style="display:none">
               </label>
@@ -761,7 +773,7 @@
             <td>${entry.weight || '-'}</td>
             <td>${entry.symptoms}</td>
             <td>${entry.notes}</td>
-            <td><button type="button" class="btn-danger table-btn delete-entry" data-index="${index}">Delete</button></td>
+            <td><button type="button" class="btn-danger table-btn std-btn delete-entry" data-index="${index}">Delete</button></td>
           </tr>
         `).join('');
         entryCounter.textContent = `${entries.length} entr${entries.length === 1 ? 'y' : 'ies'}`;
@@ -1022,9 +1034,16 @@
         }
         const headers = lines[0].split(',').map(h => h.trim());
         
-        if (headers.join(',') !== headerOrder.join(',')) {
+        // Old Schema (8 cols): Date, Time, Duration (sec), Location, Grip Type, PRE, Symptoms, Notes
+        const oldHeaderOrder = ['Date', 'Time', 'Duration (sec)', 'Location', 'Grip Type', 'PRE', 'Symptoms', 'Notes'];
+
+        const isNewFormat = headers.join(',') === headerOrder.join(',');
+        const isOldFormat = headers.join(',') === oldHeaderOrder.join(',');
+
+        if (!isNewFormat && !isOldFormat) {
           throw new Error('CSV header does not match the expected format.');
         }
+
         const parsedEntries = lines.slice(1).map(line => {
           const cells = [];
           let current = '';
@@ -1045,17 +1064,35 @@
           }
           cells.push(current);
           
-          const entry = {
-            date: cells[0],
-            time: cells[1],
-            duration: cells[2],
-            location: cells[3],
-            grip: cells[4],
-            pre: cells[5],
-            weight: cells[6],
-            symptoms: cells[7].replace(/^"|"$/g, ''),
-            notes: cells[8].replace(/^"|"$/g, '')
-          };
+          let entry = {};
+
+          if (isNewFormat) {
+            entry = {
+              date: cells[0],
+              time: cells[1],
+              duration: cells[2],
+              location: cells[3],
+              grip: cells[4],
+              pre: cells[5],
+              weight: cells[6],
+              symptoms: cells[7].replace(/^"|"$/g, ''),
+              notes: cells[8].replace(/^"|"$/g, '')
+            };
+          } else {
+            // Old format mapping (Weight is missing)
+            entry = {
+              date: cells[0],
+              time: cells[1],
+              duration: cells[2],
+              location: cells[3],
+              grip: cells[4],
+              pre: cells[5],
+              weight: '', 
+              symptoms: cells[6].replace(/^"|"$/g, ''),
+              notes: cells[7].replace(/^"|"$/g, '')
+            };
+          }
+
           const errors = validateEntry(entry);
           if (errors.length) {
             throw new Error(`Invalid entry in CSV: ${errors.join(' ')}`);
