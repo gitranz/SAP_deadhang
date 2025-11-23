@@ -515,6 +515,40 @@
       display: inline-block;
     }
 
+    /* Heart Overlay Styles */
+    .heart-overlay {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none; /* Allows clicks to pass through when not active */
+      transition: opacity 0.2s ease-out;
+    }
+
+    .heart-overlay.show {
+      opacity: 1;
+    }
+
+    .heart-icon {
+      font-size: 3rem; /* Normal size icon */
+      animation: heartBeat 3.5s ease-out forwards; /* Flash for 0.5 seconds */
+      display: block; /* Ensure animation applies correctly */
+      transform-origin: center center;
+    }
+
+    @keyframes heartBeat {
+      0% { transform: scale(0.5); opacity: 0; }
+      50% { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(1); opacity: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .heart-icon {
+        animation: none;
+      }
+    }
+
     @media (max-width: 640px) {
       .form-grid {
         grid-template-columns: 1fr;
@@ -549,6 +583,9 @@
   </style>
 </head>
 <body>
+  <div id="heartOverlay" class="heart-overlay" hidden>
+    <span class="heart-icon">❤️</span>
+  </div>
   <div class="app-shell">
     <header>
       <h2>Dead Hang Control Center</h2>
@@ -761,6 +798,7 @@
       const resetTimerBtn = document.getElementById('resetTimer');
       
       const themeToggle = document.getElementById('themeToggle');
+      const heartOverlay = document.getElementById('heartOverlay');
 
       // State
       let entries = [];
@@ -786,6 +824,18 @@
           document.body.removeAttribute('data-theme');
           themeToggle.textContent = 'Dark Mode';
         }
+
+        // Show heart overlay for a moment
+        heartOverlay.hidden = false;
+        setTimeout(() => {
+          heartOverlay.classList.add('show');
+        }, 50);
+        setTimeout(() => {
+          heartOverlay.classList.remove('show');
+          setTimeout(() => {
+            heartOverlay.hidden = true;
+          }, 200); // Allow fade-out transition to complete (0.5s animation duration)
+        }, 30500); // 3.5 seconds visible
       }
 
       themeToggle.addEventListener('click', () => {
@@ -852,7 +902,7 @@
             <td>${entry.location}</td>
             <td>${entry.grip}</td>
             <td>${entry.pre}</td>
-            <td>${entry.weight || '-'}</td>
+            <td>${entry.weight}</td>
             <td>${entry.symptoms}</td>
             <td>${entry.notes}</td>
             <td><button type="button" class="btn-danger table-btn std-btn delete-entry" data-index="${index}">Delete</button></td>
