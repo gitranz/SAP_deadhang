@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0a6ed1">
   <title>SAP Dead Hang Tracker</title>
   <style>
     :root {
@@ -48,7 +51,60 @@
       font-family: "Segoe UI", "Helvetica Neue", system-ui, -apple-system, sans-serif;
     }
 
+    /* Range Slider Styling */
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      background: transparent;
+      padding: 0;
+      margin: 10px 0;
+    }
+    
+    input[type=range]:focus {
+      outline: none;
+      box-shadow: none;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 28px;
+      width: 28px;
+      border-radius: 50%;
+      background: var(--sap-teal);
+      cursor: pointer;
+      margin-top: -12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      transition: transform 0.1s;
+    }
+    
+    input[type=range]::-webkit-slider-thumb:active {
+      transform: scale(1.1);
+    }
+
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 6px;
+      cursor: pointer;
+      background: var(--input-border);
+      border-radius: 4px;
+    }
+    
+    .range-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .range-value {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--sap-teal);
+      min-width: 2rem;
+      text-align: center;
+    }
+
     [data-theme="dark"] {
+
       --sap-teal: #3182ce;
       --sap-teal-dark: #2c5282;
       --sap-text: #f7fafc;
@@ -201,13 +257,14 @@
     select,
     textarea {
       width: 100%;
-      padding: 0.65rem 0.8rem;
+      padding: 0.8rem; /* Larger touch target */
       border: 1px solid var(--input-border);
-      border-radius: 0.65rem;
-      font-size: 1rem;
-      transition: border 0.2s ease;
+      border-radius: 0.8rem;
+      font-size: 16px; /* Prevent zoom on iOS */
+      transition: border 0.2s ease, box-shadow 0.2s ease;
       background: var(--input-bg);
       color: var(--sap-text);
+      appearance: none; /* Remove default styling */
     }
 
     input:focus,
@@ -511,7 +568,7 @@
               <input type="time" id="time" required>
 
               <label for="duration">Duration [sec]</label>
-              <input type="number" id="duration" min="1" placeholder="Duration in seconds" required>
+              <input type="number" id="duration" min="1" placeholder="Duration in seconds" inputmode="numeric" required>
 
               <label for="location">Location</label>
               <select id="location" required>
@@ -532,10 +589,13 @@
               </select>
 
               <label for="pre">PRE (1-10)</label>
-              <input type="number" id="pre" min="1" max="10" required>
+              <div class="range-wrapper">
+                <input type="range" id="pre" min="1" max="10" step="1" value="5">
+                <span id="preValue" class="range-value">5</span>
+              </div>
 
               <label for="weight">Weight (kg)</label>
-              <input type="number" id="weight" step="0.1" min="0" placeholder="Optional">
+              <input type="number" id="weight" step="0.1" min="0" placeholder="Optional" inputmode="decimal">
 
               <label>Symptoms</label>
               <div class="symptom-list" id="symptomList">
@@ -647,6 +707,7 @@
       const locationSelect = document.getElementById('location');
       const gripSelect = document.getElementById('grip');
       const preInput = document.getElementById('pre');
+      const preValueDisplay = document.getElementById('preValue');
       const weightInput = document.getElementById('weight');
       const notesInput = document.getElementById('notes');
       const symptomList = document.getElementById('symptomList');
@@ -734,6 +795,7 @@
         locationSelect.value = 'At Home';
         gripSelect.value = 'Passive Hang';
         preInput.value = 5;
+        preValueDisplay.textContent = '5';
         weightInput.value = '';
         notesInput.value = '';
         symptomList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
@@ -1200,6 +1262,10 @@
       
       checkDuration.addEventListener('change', drawTrend);
       checkWeight.addEventListener('change', drawTrend);
+
+      preInput.addEventListener('input', () => {
+        preValueDisplay.textContent = preInput.value;
+      });
 
       entriesBody.addEventListener('click', (event) => {
         const deleteBtn = event.target.closest('.delete-entry');
