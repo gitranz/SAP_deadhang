@@ -1,0 +1,11 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data.db:/app/data.db
+    environment:
+      - DATABASE_URL=data.db
+      - AUTH_SECRET=your-secure-secret-here
+    restart: always
