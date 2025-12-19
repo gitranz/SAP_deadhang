@@ -1,11 +1,13 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import { authConfig } from "./auth.config";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+    ...authConfig,
     providers: [
         Credentials({
             credentials: {
@@ -21,8 +23,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     .where(eq(users.username, credentials.username as string));
 
                 if (!user) {
-                    // For this specific use case (2-3 users), let's auto-register if no users exist
-                    // Or just check password if user exists
                     return null;
                 }
 
@@ -38,17 +38,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }),
     ],
     callbacks: {
-        authorized({ auth, request: { nextUrl } }) {
-            const isLoggedIn = !!auth?.user;
-            const isOnDashboard = nextUrl.pathname === "/";
-            if (isOnDashboard) {
-                if (isLoggedIn) return true;
-                return false; // Redirect unauthenticated users to login page
-            } else if (isLoggedIn) {
-                return Response.redirect(new URL("/", nextUrl));
-            }
-            return true;
-        },
+        ...authConfig.callbacks,
         jwt({ token, user }) {
             if (user) {
                 token.id = user.id;
@@ -61,8 +51,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             }
             return session;
         },
-    },
-    pages: {
-        signIn: "/login",
     },
 });
