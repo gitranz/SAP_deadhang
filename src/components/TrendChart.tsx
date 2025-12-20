@@ -36,6 +36,27 @@ export default function TrendChart({ sessions }: { sessions: Session[] }) {
 
     return (
         <div className="glass p-6 rounded-3xl h-[400px] flex flex-col">
+            <style jsx global>{`
+                .recharts-wrapper:focus,
+                .recharts-wrapper:focus-visible,
+                .recharts-surface:focus,
+                .recharts-surface:focus-visible,
+                .recharts-layer:focus,
+                .recharts-layer:focus-visible {
+                    outline: none !important;
+                    box-shadow: none !important; // Tailwind uses box-shadow for rings
+                    border: none !important;
+                }
+                
+                /* Target all SVGs and paths within the chart */
+                .recharts-wrapper svg:focus,
+                .recharts-wrapper svg:focus-visible,
+                .recharts-wrapper path:focus,
+                .recharts-wrapper path:focus-visible {
+                    outline: none !important;
+                    box-shadow: none !important;
+                }
+            `}</style>
             <h3 className="text-lg font-bold mb-6 text-slate-300">Performance Over Time</h3>
             <div className="flex-1 min-h-0 w-full">
                 <ResponsiveContainer width="100%" height="100%">
