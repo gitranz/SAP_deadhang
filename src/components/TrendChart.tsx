@@ -18,14 +18,21 @@ interface Session {
 }
 
 export default function TrendChart({ sessions }: { sessions: Session[] }) {
-    const data = sessions
-        .map((s) => ({
-            date: s.date,
-            datetime: `${s.date} ${s.time}`,
-            duration: s.duration,
-            weight: s.weight || 0,
-        }))
-        .sort((a, b) => a.datetime.localeCompare(b.datetime));
+    // Sort sessions chronologically first
+    const sortedSessions = sessions.slice().sort((a, b) => {
+        const dateA = new Date(`${a.date}T${a.time}`);
+        const dateB = new Date(`${b.date}T${b.time}`);
+        return dateA.getTime() - dateB.getTime();
+    });
+
+    // Map to data with unique keys to handle same-minute entries
+    const data = sortedSessions.map((s, i) => ({
+        date: s.date,
+        uniqueDatetime: `${s.date} ${s.time}#${i}`, // Unique key for XAxis
+        displayTime: `${s.date} ${s.time}`, // For tooltip display
+        duration: s.duration,
+        weight: s.weight || 0,
+    }));
 
     return (
         <div className="glass p-6 rounded-3xl h-[400px] flex flex-col">
@@ -45,7 +52,7 @@ export default function TrendChart({ sessions }: { sessions: Session[] }) {
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
                         <XAxis
-                            dataKey="datetime"
+                            dataKey="uniqueDatetime"
                             stroke="#64748b"
                             fontSize={10}
                             tickLine={false}
@@ -73,6 +80,7 @@ export default function TrendChart({ sessions }: { sessions: Session[] }) {
                             contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '12px', fontSize: '12px' }}
                             itemStyle={{ color: '#f8fafc' }}
                             labelStyle={{ color: '#94a3b8', marginBottom: '8px' }}
+                            labelFormatter={(label) => label.split('#')[0]}
                         />
                         <Area
                             yAxisId="left"
