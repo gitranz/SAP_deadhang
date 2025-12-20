@@ -106,7 +106,7 @@ export default function MainDashboard({ initialSessions, initialStats, user }: a
                             <h2 className="text-xl font-bold">Full History</h2>
                             <div className="flex gap-2">
                                 <ImportCSV />
-                                <button onClick={handleExport} className="btn-secondary py-2 px-4 text-sm gap-2">
+                                <button onClick={handleExport} className="btn-secondary py-2 px-4 text-sm gap-2 flex items-center">
                                     <Download size={16} /> Export
                                 </button>
                             </div>

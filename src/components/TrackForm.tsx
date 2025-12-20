@@ -12,6 +12,7 @@ const SYMPTOMS_OPTIONS = [
     "Elbow soreness",
     "Wrist discomfort",
     "Shoulder strain",
+    "Finger soreness",
     "Back tension",
 ];
 

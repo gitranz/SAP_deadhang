@@ -56,12 +56,13 @@ export default function ImportCSV() {
     };
 
     return (
-        <div className="flex flex-col gap-2">
-            <label className="btn-secondary cursor-pointer">
-                <Upload size={16} /> {loading ? "Importing..." : "Import CSV"}
+        <div className="relative">
+            <label className="btn-secondary py-2 px-4 text-sm gap-2 cursor-pointer flex items-center justify-center">
+                <Upload size={16} />
+                <span>{loading ? "Importing..." : "Import CSV"}</span>
                 <input type="file" className="hidden" accept=".csv" onChange={handleFileUpload} disabled={loading} />
             </label>
-            {feedback && <p className="text-[10px] text-blue-400 text-center">{feedback}</p>}
+            {feedback && <p className="absolute top-full left-0 w-full text-[10px] text-blue-400 text-center mt-1">{feedback}</p>}
         </div>
     );
 }
