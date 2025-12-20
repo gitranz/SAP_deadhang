@@ -20,12 +20,6 @@ export default function TrackForm({ initialDuration = 0 }: TrackFormProps) {
     const [symptoms, setSymptoms] = useState<string[]>([]);
     const [status, setStatus] = useState("");
 
-    useEffect(() => {
-        if (initialDuration > 0) {
-            setDuration(initialDuration);
-        }
-    }, [initialDuration]);
-
     const toggleSymptom = (s: string) => {
         setSymptoms(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
     };
@@ -119,8 +113,8 @@ export default function TrackForm({ initialDuration = 0 }: TrackFormProps) {
                             type="button"
                             onClick={() => toggleSymptom(s)}
                             className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${symptoms.includes(s)
-                                    ? "bg-blue-600 border-blue-500 text-white"
-                                    : "bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500"
+                                ? "bg-blue-600 border-blue-500 text-white"
+                                : "bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500"
                                 }`}
                         >
                             {s}

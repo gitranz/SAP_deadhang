@@ -1,8 +1,6 @@
 "use client";
 
 import {
-    LineChart,
-    Line,
     XAxis,
     YAxis,
     CartesianGrid,
@@ -12,56 +10,93 @@ import {
     Area,
 } from "recharts";
 
-export default function TrendChart({ sessions }: { sessions: any[] }) {
+interface Session {
+    date: string;
+    time: string;
+    duration: number;
+    weight: number | null;
+}
+
+export default function TrendChart({ sessions }: { sessions: Session[] }) {
     const data = sessions
-        .slice()
-        .reverse()
         .map((s) => ({
             date: s.date,
+            datetime: `${s.date} ${s.time}`,
             duration: s.duration,
             weight: s.weight || 0,
-        }));
+        }))
+        .sort((a, b) => a.datetime.localeCompare(b.datetime));
 
     return (
-        <div className="glass p-6 rounded-3xl h-[400px]">
+        <div className="glass p-6 rounded-3xl h-[400px] flex flex-col">
             <h3 className="text-lg font-bold mb-6 text-slate-300">Performance Over Time</h3>
-            <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={data}>
-                    <defs>
-                        <linearGradient id="colorDur" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                        </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                    <XAxis
-                        dataKey="date"
-                        stroke="#64748b"
-                        fontSize={10}
-                        tickLine={false}
-                        axisLine={false}
-                    />
-                    <YAxis
-                        stroke="#64748b"
-                        fontSize={10}
-                        tickLine={false}
-                        axisLine={false}
-                        label={{ value: 'Seconds', angle: -90, position: 'insideLeft', fill: '#64748b', fontSize: 10 }}
-                    />
-                    <Tooltip
-                        contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '12px', fontSize: '12px' }}
-                        itemStyle={{ color: '#f8fafc' }}
-                    />
-                    <Area
-                        type="monotone"
-                        dataKey="duration"
-                        stroke="#3b82f6"
-                        strokeWidth={3}
-                        fillOpacity={1}
-                        fill="url(#colorDur)"
-                    />
-                </AreaChart>
-            </ResponsiveContainer>
+            <div className="flex-1 min-h-0 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={data}>
+                        <defs>
+                            <linearGradient id="colorDur" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                            </linearGradient>
+                            <linearGradient id="colorWeight" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
+                                <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+                            </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                        <XAxis
+                            dataKey="datetime"
+                            stroke="#64748b"
+                            fontSize={10}
+                            tickLine={false}
+                            axisLine={false}
+                            tickFormatter={(val) => val.split(' ')[0]}
+                        />
+                        <YAxis
+                            yAxisId="left"
+                            stroke="#64748b"
+                            fontSize={10}
+                            tickLine={false}
+                            axisLine={false}
+                            label={{ value: 'Seconds', angle: -90, position: 'insideLeft', fill: '#64748b', fontSize: 10 }}
+                        />
+                        <YAxis
+                            yAxisId="right"
+                            orientation="right"
+                            stroke="#64748b"
+                            fontSize={10}
+                            tickLine={false}
+                            axisLine={false}
+                            label={{ value: 'Weight (kg)', angle: 90, position: 'insideRight', fill: '#64748b', fontSize: 10 }}
+                        />
+                        <Tooltip
+                            contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '12px', fontSize: '12px' }}
+                            itemStyle={{ color: '#f8fafc' }}
+                            labelStyle={{ color: '#94a3b8', marginBottom: '8px' }}
+                        />
+                        <Area
+                            yAxisId="left"
+                            type="monotone"
+                            dataKey="duration"
+                            stroke="#3b82f6"
+                            strokeWidth={3}
+                            fillOpacity={1}
+                            fill="url(#colorDur)"
+                            name="Duration"
+                        />
+                        <Area
+                            yAxisId="right"
+                            type="monotone"
+                            dataKey="weight"
+                            stroke="#f59e0b"
+                            strokeWidth={3}
+                            fillOpacity={1}
+                            fill="url(#colorWeight)"
+                            name="Weight"
+                        />
+                    </AreaChart>
+                </ResponsiveContainer>
+            </div>
         </div>
     );
 }

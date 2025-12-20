@@ -69,6 +69,27 @@ export async function saveSessionAction(data: any) {
     revalidatePath("/");
 }
 
+export async function updateSessionAction(id: string, data: any) {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
+
+    await db.update(sessions)
+        .set({
+            date: data.date,
+            time: data.time,
+            duration: parseInt(data.duration),
+            location: data.location,
+            grip: data.grip,
+            pre: parseFloat(data.pre),
+            weight: data.weight ? parseFloat(data.weight) : null,
+            symptoms: data.symptoms,
+            notes: data.notes,
+        })
+        .where(eq(sessions.id, id));
+
+    revalidatePath("/");
+}
+
 export async function deleteSessionAction(id: string) {
     const session = await auth();
     if (!session?.user?.id) throw new Error("Unauthorized");
